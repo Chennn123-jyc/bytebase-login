@@ -1,46 +1,67 @@
-# Getting Started with Create React App
+# Bytebase 登录页面
 
-This project was bootstrapped with [Create React App](https://github.com/facebook/create-react-app).
+这是一个基于 React 和 TypeScript 的 Bytebase 登录页面实现，包含 GitHub 第三方登录功能和响应式设计。
 
-## Available Scripts
+## 项目结构
 
-In the project directory, you can run:
+```
+bytebase-login/
+├── public/                 # 静态资源文件
+├── src/
+│   ├── assets/             # 图像和SVG资源
+│   │   └── WelcomeIllustration.svg  # 欢迎页SVG插画
+│   ├── contexts/           # React上下文
+│   │   └── AuthContext.tsx # 认证上下文，管理登录状态
+│   ├── App.tsx             # 主应用组件
+│   ├── App.css             # 应用样式
+│   ├── index.tsx           # 应用入口点
+│   └── ...                 # 其他React相关文件
+├── package.json            # 项目依赖配置
+└── tsconfig.json           # TypeScript配置
+```
 
-### `npm start`
+## 功能特性
 
-Runs the app in the development mode.\
-Open [http://localhost:3000](http://localhost:3000) to view it in the browser.
+- **左右分栏布局**：左侧为紫色渐变背景和欢迎插画，右侧为登录表单
+- **GitHub第三方登录**：支持使用GitHub账号登录系统
+- **用户信息展示**：登录成功后显示用户头像、用户名和邮箱
+- **响应式设计**：适配桌面和移动设备屏幕
+- **交互体验优化**：包含加载状态、按钮动画和焦点效果
 
-The page will reload if you make edits.\
-You will also see any lint errors in the console.
+## 技术栈
 
-### `npm test`
+- React
+- TypeScript
+- CSS (响应式设计)
+- SVG (自定义插画)
+- GitHub OAuth (第三方登录)
 
-Launches the test runner in the interactive watch mode.\
-See the section about [running tests](https://facebook.github.io/create-react-app/docs/running-tests) for more information.
+## 使用说明
 
-### `npm run build`
+### 安装依赖
 
-Builds the app for production to the `build` folder.\
-It correctly bundles React in production mode and optimizes the build for the best performance.
+```bash
+npm install
+```
 
-The build is minified and the filenames include the hashes.\
-Your app is ready to be deployed!
+### 本地开发
 
-See the section about [deployment](https://facebook.github.io/create-react-app/docs/deployment) for more information.
+```bash
+npm start
+```
 
-### `npm run eject`
+### 生产构建
 
-**Note: this is a one-way operation. Once you `eject`, you can’t go back!**
+```bash
+npm run build
+```
 
-If you aren’t satisfied with the build tool and configuration choices, you can `eject` at any time. This command will remove the single build dependency from your project.
+### GitHub OAuth配置
 
-Instead, it will copy all the configuration files and the transitive dependencies (webpack, Babel, ESLint, etc) right into your project so you have full control over them. All of the commands except `eject` will still work, but they will point to the copied scripts so you can tweak them. At this point you’re on your own.
+要使用真实的GitHub登录功能，需要在 GitHub 开发者设置中创建一个 OAuth 应用，并将客户端ID替换到 `src/contexts/AuthContext.tsx` 文件中的 `GITHUB_CLIENT_ID` 变量。
 
-You don’t have to ever use `eject`. The curated feature set is suitable for small and middle deployments, and you shouldn’t feel obligated to use this feature. However we understand that this tool wouldn’t be useful if you couldn’t customize it when you are ready for it.
+## 注意事项
 
-## Learn More
-
-You can learn more in the [Create React App documentation](https://facebook.github.io/create-react-app/docs/getting-started).
-
-To learn React, check out the [React documentation](https://reactjs.org/).
+- 本项目中的GitHub登录功能在没有配置真实客户端ID的情况下，使用模拟用户数据进行展示
+- 生产环境部署时，建议将OAuth回调URL配置为实际的生产域名
+- 确保在GitHub应用设置中正确配置授权范围（scope）

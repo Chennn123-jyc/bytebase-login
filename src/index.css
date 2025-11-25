@@ -1,12 +1,18 @@
+/**
+ * 全局基础样式
+ */
+
+/* 基础body样式 - 去除默认边距，设置跨平台一致的字体 */
 body {
   margin: 0;
   font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', 'Roboto', 'Oxygen',
     'Ubuntu', 'Cantarell', 'Fira Sans', 'Droid Sans', 'Helvetica Neue',
     sans-serif;
-  -webkit-font-smoothing: antialiased;
-  -moz-osx-font-smoothing: grayscale;
+  -webkit-font-smoothing: antialiased; /* WebKit浏览器字体平滑 */
+  -moz-osx-font-smoothing: grayscale; /* Firefox字体平滑 */
 }
 
+/* 代码块字体样式 */
 code {
   font-family: source-code-pro, Menlo, Monaco, Consolas, 'Courier New',
     monospace;
