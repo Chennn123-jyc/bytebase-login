@@ -1,0 +1,20 @@
+{
+  "files": {
+    "main.css": "/bytebase-login/static/css/main.64f008d2.css",
+    "main.js": "/bytebase-login/static/js/main.73d331c9.js",
+    "static/js/453.ce413643.chunk.js": "/bytebase-login/static/js/453.ce413643.chunk.js",
+    "static/media/login-bg.webp": "/bytebase-login/static/media/login-bg.8ccbd85e5f1a99d1a18c.webp",
+    "static/media/logo.svg": "/bytebase-login/static/media/logo.1d104b9d60d9924db8e2fec55eb49185.svg",
+    "static/media/github.svg": "/bytebase-login/static/media/github.93f849ba70ebd09a66dc3f5c40b75a5a.svg",
+    "index.html": "/bytebase-login/index.html",
+    "static/media/g.svg": "/bytebase-login/static/media/g.450b88c485cd37a43a73b9e7d221a67d.svg",
+    "static/media/windows.svg": "/bytebase-login/static/media/windows.73fbbf647ac0c6cddbeb9c823a97df8d.svg",
+    "main.64f008d2.css.map": "/bytebase-login/static/css/main.64f008d2.css.map",
+    "main.73d331c9.js.map": "/bytebase-login/static/js/main.73d331c9.js.map",
+    "453.ce413643.chunk.js.map": "/bytebase-login/static/js/453.ce413643.chunk.js.map"
+  },
+  "entrypoints": [
+    "static/css/main.64f008d2.css",
+    "static/js/main.73d331c9.js"
+  ]
+}
