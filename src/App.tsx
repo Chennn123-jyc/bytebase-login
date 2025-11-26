@@ -1,5 +1,5 @@
 import React from 'react';
-import { BrowserRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
+import { HashRouter as Router, Routes, Route, useLocation } from 'react-router-dom';
 import './App.css';
 import { AuthProvider, useAuth } from './contexts/AuthContext';
 
@@ -14,6 +14,7 @@ const RouteDebugger: React.FC = () => {
   const location = useLocation();
   console.log('当前路由:', location.pathname);
   console.log('查询参数:', location.search);
+  console.log('Hash:', location.hash);
   return null;
 };
 
@@ -26,13 +27,10 @@ function LoginPage() {
   
   // 添加调试信息
   console.log('LoginPage - 当前路由:', location.pathname);
+  console.log('LoginPage - 查询参数:', location.search);
   console.log('LoginPage - 用户状态:', user);
   console.log('LoginPage - 登录中:', isLoggingIn);
 
-  // 检查是否是回调路由
-  const isCallbackRoute = location.pathname === '/auth/github/callback';
-  console.log('是否是回调路由:', isCallbackRoute);
-  
   if (user) {
     return (
       <div className="login-container">
@@ -133,7 +131,7 @@ function LoginPage() {
             />
             <button className="continue-button" disabled>继续</button>
             <div className="signup-link">
-              没有账户？<a href="#">注册</a>
+              没有账户？<a href="https://github.com/signup" target="_blank" rel="noopener noreferrer">注册</a>
             </div>
           </div>
         </div>
@@ -142,24 +140,15 @@ function LoginPage() {
   );
 }
 
-// 简化路由 - 所有路由都使用 LoginPage
-function AppRoutes() {
-  return (
-    <Routes>
-      <Route path="/" element={<LoginPage />} />
-      <Route path="/auth/github/callback" element={<LoginPage />} />
-      {/* 捕获所有未匹配的路由 */}
-      <Route path="*" element={<LoginPage />} />
-    </Routes>
-  );
-}
-
 function App() {
   return (
     <AuthProvider>
       <Router>
         <RouteDebugger />
-        <AppRoutes />
+        <Routes>
+          {/* 只有一个路由，所有路径都渲染 LoginPage */}
+          <Route path="*" element={<LoginPage />} />
+        </Routes>
       </Router>
     </AuthProvider>
   );

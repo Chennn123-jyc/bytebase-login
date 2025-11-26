@@ -31,26 +31,33 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // GitHub OAuth 配置
-  const GITHUB_CLIENT_ID = process.env.REACT_APP_GITHUB_CLIENT_ID;
-  const GITHUB_CLIENT_SECRET = process.env.REACT_APP_GITHUB_CLIENT_SECRET;
-  const GITHUB_REDIRECT_URI = process.env.REACT_APP_GITHUB_REDIRECT_URI;
-
-  // 初始化检查本地存储的用户信息
-  useEffect(() => {
-    const savedUser = localStorage.getItem('github_user');
-    if (savedUser) {
-      setUser(JSON.parse(savedUser));
-    }
   
-    // 检查 URL 中是否有授权码（回调处理）
-    const urlParams = new URLSearchParams(window.location.search);
-    const code = urlParams.get('code');
-    
-    if (code) {
-      handleGitHubCallback(code);
+
+  // 使用授权码交换用户信息（纯前端实现）
+  const exchangeCodeForUserInfo = async (code: string): Promise<User> => {
+    try {
+      // 使用你的 Netlify 函数 URL
+      const netlifyFunctionURL = 'https://bytebase-login-backend.netlify.app/.netlify/functions/github-oauth';
+      
+      const response = await fetch(netlifyFunctionURL, {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ code })
+      });
+  
+      if (!response.ok) {
+        const errorData = await response.json();
+        throw new Error(errorData.error || '请求失败');
+      }
+  
+      return await response.json();
+    } catch (error) {
+      console.error('获取用户信息失败:', error);
+      throw new Error(`GitHub OAuth 失败: ${error instanceof Error ? error.message : '未知错误'}`);
     }
-  }, []);
+  };
 
   // 处理 GitHub 回调
   const handleGitHubCallback = async (code: string) => {
@@ -65,76 +72,64 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       setUser(userInfo);
       localStorage.setItem('github_user', JSON.stringify(userInfo));
       
-      // 清除 URL 中的参数 - 确保这行代码执行
-      window.history.replaceState({}, document.title, '/');
+      // 清除 URL 中的参数，回到首页
+      const cleanUrl = window.location.origin + window.location.pathname;
+      window.history.replaceState({}, document.title, cleanUrl);
       console.log('登录成功，已清除URL参数');
       
     } catch (error) {
       console.error('GitHub 登录失败:', error);
-      // 错误处理...
+      
+      let errorMessage = 'GitHub 登录失败，请重试';
+      if (error instanceof Error) {
+        errorMessage = `GitHub 登录失败: ${error.message}`;
+      }
+      
+      alert(errorMessage);
     } finally {
       setIsLoggingIn(false);
     }
   };
 
-  // 使用授权码交换用户信息（真实实现）
-  const exchangeCodeForUserInfo = async (code: string): Promise<User> => {
-    try {
-      console.log('正在向后端发送授权码...', code);
-      
-      const response = await fetch('http://localhost:5000/api/github/oauth', {
-        method: 'POST',
-        headers: {
-          'Content-Type': 'application/json',
-        },
-        body: JSON.stringify({ code })
-      });
-  
-      console.log('后端响应状态:', response.status);
-  
-      if (!response.ok) {
-        const errorText = await response.text();
-        console.error('后端错误响应:', errorText);
-        throw new Error(`HTTP error! status: ${response.status}, message: ${errorText}`);
-      }
-  
-      const userData = await response.json();
-      console.log('从后端收到的用户数据:', userData);
-      
-      return userData;
-    } catch (error) {
-      console.error('获取用户信息失败:', error);
-      
-      // 修复错误2：安全地处理 unknown 类型的 error
-      let errorMessage = '连接后端失败';
-      if (error instanceof Error) {
-        errorMessage = `连接后端失败: ${error.message}`;
-      } else if (typeof error === 'string') {
-        errorMessage = `连接后端失败: ${error}`;
-      }
-      
-      throw new Error(errorMessage);
-    }
+  // GitHub 登录（纯前端）
+  const loginWithGitHub = () => {
+    setIsLoggingIn(true);
+    
+    // 使用 GitHub Pages 的 URL 作为重定向 URI
+    const redirectUri = 'https://chennn123-jyc.github.io/bytebase-login';
+    
+    // 构建 GitHub OAuth 授权 URL
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user:email`;
+    
+    console.log('GitHub 授权 URL:', authUrl);
+    
+    // 重定向到 GitHub 授权页面
+    window.location.href = authUrl;
   };
-
-  // GitHub 登录
-  // GitHub 登录
-const loginWithGitHub = () => {
-  setIsLoggingIn(true);
-  
-  // 构建 GitHub OAuth 授权 URL
-  const authUrl = `https://github.com/login/oauth/authorize?client_id=${GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(GITHUB_REDIRECT_URI || '')}&scope=user:email`;
-  
-  // 重定向到 GitHub 授权页面
-  window.location.href = authUrl;
-  
-};
 
   // 退出登录
   const logout = () => {
     setUser(null);
     localStorage.removeItem('github_user');
   };
+
+  // 初始化检查本地存储的用户信息
+  useEffect(() => {
+    
+    const savedUser = localStorage.getItem('github_user');
+    if (savedUser) {
+      setUser(JSON.parse(savedUser));
+    }
+
+    // 检查 URL 中是否有授权码（回调处理）
+    const urlParams = new URLSearchParams(window.location.search);
+    const code = urlParams.get('code');
+    
+    if (code) {
+      console.log('发现授权码，开始处理回调:', code);
+      handleGitHubCallback(code);
+    }
+  }, []);
 
   const value: AuthContextType = {
     user,
