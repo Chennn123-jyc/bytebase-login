@@ -32,32 +32,45 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  // 使用授权码交换用户信息（使用 Netlify 函数）
+  // 使用授权码交换用户信息（仅使用 Netlify 函数，不再使用 CORS 代理）
   const exchangeCodeForUserInfo = async (code: string): Promise<User> => {
     try {
-      // 使用 Netlify 函数
+      // 使用 Netlify 函数 - 这是我们自己部署的后端，不需要 CORS 代理
       const netlifyFunctionURL = 'https://bytebase-login-backend.netlify.app/.netlify/functions/github-oauth';
       
       console.log('正在调用 Netlify 函数:', netlifyFunctionURL);
+      console.log('授权码:', code);
+      
+      // 添加超时控制
+      const controller = new AbortController();
+      const timeoutId = setTimeout(() => controller.abort(), 10000); // 10秒超时
       
       const response = await fetch(netlifyFunctionURL, {
         method: 'POST',
         headers: {
           'Content-Type': 'application/json',
         },
-        body: JSON.stringify({ code })
+        body: JSON.stringify({ code }),
+        signal: controller.signal
       });
+      
+      clearTimeout(timeoutId);
 
       console.log('收到响应，状态:', response.status);
       
       if (!response.ok) {
-        const errorData = await response.json();
-        throw new Error(errorData.error || '请求失败');
+        const errorData = await response.json().catch(() => ({}));
+        throw new Error(errorData.error || `Netlify 函数调用失败，状态码: ${response.status}`);
       }
 
-      return await response.json();
+      const userData = await response.json();
+      console.log('用户数据获取成功，返回字段:', Object.keys(userData).join(', '));
+      return userData;
     } catch (error) {
       console.error('获取用户信息失败:', error);
+      if (error instanceof Error && error.name === 'AbortError') {
+        throw new Error('请求超时，请检查网络连接后重试');
+      }
       throw new Error(`GitHub OAuth 失败: ${error instanceof Error ? error.message : '未知错误'}`);
     }
   };
@@ -69,6 +82,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     try {
       console.log('开始处理 GitHub 回调，授权码:', code);
       
+      // 直接使用 Netlify 函数，不再经过任何 CORS 代理
       const userInfo = await exchangeCodeForUserInfo(code);
       console.log('成功获取用户信息:', userInfo);
       
@@ -119,9 +133,15 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // 初始化检查本地存储的用户信息
   useEffect(() => {
+    // 检查本地存储的用户信息
     const savedUser = localStorage.getItem('github_user');
     if (savedUser) {
-      setUser(JSON.parse(savedUser));
+      try {
+        setUser(JSON.parse(savedUser));
+      } catch (e) {
+        console.error('解析保存的用户信息失败:', e);
+        localStorage.removeItem('github_user');
+      }
     }
 
     // 检查 URL 中是否有授权码（回调处理）
@@ -132,6 +152,7 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
       console.log('发现授权码，开始处理回调:', code);
       handleGitHubCallback(code);
     }
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   }, []);
 
   const value: AuthContextType = {
