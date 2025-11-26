@@ -1,3 +1,4 @@
+// src/contexts/AuthContext.tsx
 import React, { createContext, useState, useContext, useEffect, ReactNode } from 'react';
 
 // 用户信息接口
@@ -31,13 +32,13 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
   const [user, setUser] = useState<User | null>(null);
   const [isLoggingIn, setIsLoggingIn] = useState(false);
 
-  
-
-  // 使用授权码交换用户信息（纯前端实现）
+  // 使用授权码交换用户信息（使用 Netlify 函数）
   const exchangeCodeForUserInfo = async (code: string): Promise<User> => {
     try {
-      // 使用你的 Netlify 函数 URL
+      // 使用 Netlify 函数
       const netlifyFunctionURL = 'https://bytebase-login-backend.netlify.app/.netlify/functions/github-oauth';
+      
+      console.log('正在调用 Netlify 函数:', netlifyFunctionURL);
       
       const response = await fetch(netlifyFunctionURL, {
         method: 'POST',
@@ -46,12 +47,14 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
         },
         body: JSON.stringify({ code })
       });
-  
+
+      console.log('收到响应，状态:', response.status);
+      
       if (!response.ok) {
         const errorData = await response.json();
         throw new Error(errorData.error || '请求失败');
       }
-  
+
       return await response.json();
     } catch (error) {
       console.error('获取用户信息失败:', error);
@@ -91,15 +94,16 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
     }
   };
 
-  // GitHub 登录（纯前端）
+  // GitHub 登录
   const loginWithGitHub = () => {
     setIsLoggingIn(true);
     
-    // 使用 GitHub Pages 的 URL 作为重定向 URI
+    // 使用硬编码的重定向 URI（因为环境变量有问题）
     const redirectUri = 'https://chennn123-jyc.github.io/bytebase-login';
+    const clientId = 'Ov23limToHvPqFDn9D8m';
     
     // 构建 GitHub OAuth 授权 URL
-    const authUrl = `https://github.com/login/oauth/authorize?client_id=${process.env.REACT_APP_GITHUB_CLIENT_ID}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user:email`;
+    const authUrl = `https://github.com/login/oauth/authorize?client_id=${clientId}&redirect_uri=${encodeURIComponent(redirectUri)}&scope=user:email`;
     
     console.log('GitHub 授权 URL:', authUrl);
     
@@ -115,7 +119,6 @@ export const AuthProvider: React.FC<AuthProviderProps> = ({ children }) => {
 
   // 初始化检查本地存储的用户信息
   useEffect(() => {
-    
     const savedUser = localStorage.getItem('github_user');
     if (savedUser) {
       setUser(JSON.parse(savedUser));
